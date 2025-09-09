@@ -3,10 +3,23 @@ import { CVProfile } from "@shared/schema";
 export class CrewAIService {
   private apiKey: string;
   private baseUrl: string;
+  private isAzure: boolean;
+  private azureDeployment?: string;
+  private azureApiVersion?: string;
 
   constructor() {
-    this.apiKey = process.env.CREWAI_API_KEY || process.env.OPENAI_API_KEY || "default_key";
-    this.baseUrl = process.env.CREWAI_BASE_URL || "https://api.openai.com/v1";
+    // Check if Azure OpenAI is configured
+    this.isAzure = !!(process.env.AZURE_OPENAI_API_KEY && process.env.AZURE_OPENAI_ENDPOINT);
+    
+    if (this.isAzure) {
+      this.apiKey = process.env.AZURE_OPENAI_API_KEY!;
+      this.baseUrl = process.env.AZURE_OPENAI_ENDPOINT!;
+      this.azureDeployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-35-turbo";
+      this.azureApiVersion = process.env.AZURE_OPENAI_API_VERSION || "2024-02-15-preview";
+    } else {
+      this.apiKey = process.env.CREWAI_API_KEY || process.env.OPENAI_API_KEY || "default_key";
+      this.baseUrl = process.env.CREWAI_BASE_URL || "https://api.openai.com/v1";
+    }
   }
 
   async generateResponse(message: string, profile: CVProfile, section?: string): Promise<string> {
@@ -18,22 +31,44 @@ export class CrewAIService {
       const systemPrompt = this.buildSystemPrompt(profile, section);
       const userPrompt = `${sectionContext}\n\nUser question: ${message}`;
 
-      // Call AI service (OpenAI compatible API)
-      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      // Call AI service (OpenAI or Azure OpenAI)
+      const url = this.isAzure 
+        ? `${this.baseUrl}/openai/deployments/${this.azureDeployment}/chat/completions?api-version=${this.azureApiVersion}`
+        : `${this.baseUrl}/chat/completions`;
+
+      const headers = this.isAzure
+        ? {
+            'api-key': this.apiKey,
+            'Content-Type': 'application/json',
+          }
+        : {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          };
+
+      const body = this.isAzure
+        ? {
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            max_tokens: 500,
+            temperature: 0.7,
+          }
+        : {
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            max_tokens: 500,
+            temperature: 0.7,
+          };
+
+      const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
-          max_tokens: 500,
-          temperature: 0.7,
-        })
+        headers,
+        body: JSON.stringify(body)
       });
 
       if (!response.ok) {
