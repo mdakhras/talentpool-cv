@@ -1,4 +1,3 @@
-
 # CV Builder Application
 
 A modern, AI-powered CV builder application that allows users to create, edit, and manage their professional CVs with real-time chat assistance.
@@ -78,16 +77,16 @@ If you're running this project locally outside of Replit:
    ```env
    # For OpenAI
    OPENAI_API_KEY=your_openai_api_key_here
-   
+
    # For Azure OpenAI (alternative to OpenAI)
    AZURE_OPENAI_API_KEY=your_azure_openai_api_key_here
    AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com
    AZURE_OPENAI_DEPLOYMENT_NAME=your_deployment_name_here
    AZURE_OPENAI_API_VERSION=2024-02-15-preview
-   
+
    # For CrewAI (alternative service)
    CREWAI_API_KEY=your_crewai_api_key_here
-   
+
    # Application settings
    NODE_ENV=development
    PORT=5000
@@ -128,13 +127,19 @@ The application will automatically detect which AI service you've configured and
 
 ## 📄 CV Data Format
 
-The application supports importing CV data from markdown files. Place your CV markdown file in the `data/` directory. Example format:
+The application supports importing CV data from markdown files. Place your CV markdown file in the `data/` directory.
+
+### Required Files
+- **CV Data**: Place your CV content in `data/mycv.md` (automatically loaded at startup)
+- **Profile Image**: Place your photo as `data/person.png` (optional, falls back to default if not found)
 
 ```markdown
-# John Doe
+# Your Name
+
+Job Title
 
 ## Contact Information
-- Email: john@example.com
+- Email: your.email@example.com
 - Phone: +1234567890
 - Location: City, Country
 
@@ -147,13 +152,12 @@ Brief description of your professional background...
 - Achievement or responsibility
 - Another achievement
 
-## Education
-### Degree - Institution
-*Year*
-
 ## Skills
-- Technical skills
-- Soft skills
+Skill1, Skill2, Skill3
+
+## Languages
+- English - Native
+- Spanish - Conversational
 ```
 
 ## 🚀 Deployment on Replit

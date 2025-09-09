@@ -4,10 +4,20 @@ import { storage } from "./storage";
 import { insertChatMessageSchema } from "@shared/schema";
 import { CrewAIService } from "./services/crewai-service";
 import { CVParserService } from "./services/cv-parser";
+import { readFileSync, existsSync } from "fs";
+import { join } from "path";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const crewAIService = new CrewAIService();
   const cvParserService = new CVParserService();
+
+  // Initialize CV data from markdown file
+  const cvMarkdownPath = join(__dirname, "..", "data", "mycv.md");
+  if (existsSync(cvMarkdownPath)) {
+    const markdownContent = readFileSync(cvMarkdownPath, "utf-8");
+    const parsedCV = cvParserService.parseMarkdown(markdownContent);
+    await storage.updateCVProfile("default-profile", parsedCV);
+  }
 
   // Get CV profile
   app.get("/api/cv-profile", async (req, res) => {
@@ -21,6 +31,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get CV profile" });
     }
   });
+
+  // Get person image
+  app.get("/api/person.png", (req, res) => {
+    const imagePath = join(__dirname, "..", "data", "person.png");
+    if (existsSync(imagePath)) {
+      res.sendFile(imagePath);
+    } else {
+      res.status(404).json({ message: "Person image not found" });
+    }
+  });
+
 
   // Get CV sections configuration
   app.get("/api/cv-sections", async (req, res) => {
@@ -79,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/chat", async (req, res) => {
     try {
       const { message, section } = req.body;
-      
+
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ message: "Message is required" });
       }
@@ -123,16 +144,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/cv/parse", async (req, res) => {
     try {
       const { markdownContent } = req.body;
-      
+
       if (!markdownContent) {
         return res.status(400).json({ message: "Markdown content is required" });
       }
 
       const parsedCV = cvParserService.parseMarkdown(markdownContent);
-      
+
       // Update the default profile with parsed data
       const updatedProfile = await storage.updateCVProfile("default-profile", parsedCV);
-      
+
       if (!updatedProfile) {
         return res.status(404).json({ message: "Failed to update CV profile" });
       }
@@ -149,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { section } = req.params;
       const profile = await storage.getCVProfile();
-      
+
       if (!profile) {
         return res.status(404).json({ message: "CV profile not found" });
       }

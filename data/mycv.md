@@ -93,3 +93,46 @@ Name: Pavel Sorin
 Address: Valencia, Spain
 Title: Software Delivery Officer.
 Agency: IOM
+# Your Name
+
+Senior Software Engineer
+
+## Contact Information
+- Location: City, Country
+- Email: your.email@example.com
+- Phone: +1234567890
+
+## Professional Summary
+Experienced software engineer with expertise in full-stack development, cloud technologies, and modern web frameworks. Passionate about building scalable applications and leading development teams.
+
+## Experience
+
+### Senior Software Engineer - Tech Company
+*2021 - Present*
+- Led development of React-based applications serving thousands of users
+- Implemented modern state management solutions and performance optimizations
+- Collaborated with cross-functional teams to deliver high-quality software solutions
+
+### Full Stack Developer - Previous Company  
+*2019 - 2021*
+- Built and maintained web applications using Node.js, Express, and React
+- Implemented CI/CD pipelines and automated testing strategies
+- Worked with databases and cloud infrastructure
+
+## Skills
+React, Node.js, TypeScript, Python, AWS, Docker, PostgreSQL, MongoDB, Git, Jenkins
+
+## Certificates
+- AWS Certified Developer
+- React Professional Certificate  
+- Node.js Application Developer
+
+## Languages
+- English - Native
+- Spanish - Conversational  
+- French - Basic
+
+## Memberships
+- IEEE Computer Society
+- Local Developer Community
+- Tech Professional Association

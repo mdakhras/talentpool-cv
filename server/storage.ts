@@ -1,5 +1,8 @@
 import { type User, type InsertUser, type CVProfile, type InsertCVProfile, type InsertChatMessage, type ChatMessage } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { readFileSync, existsSync } from "fs";
+import { join } from "path";
+import { CVParserService } from "./services/cv-parser";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -18,51 +21,97 @@ export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private cvProfiles: Map<string, CVProfile>;
   private chatMessages: Map<string, ChatMessage>;
+  private cvParserService: CVParserService;
 
   constructor() {
     this.users = new Map();
     this.cvProfiles = new Map();
     this.chatMessages = new Map();
+    this.cvParserService = new CVParserService();
     
-    // Initialize with default CV profile
-    this.initializeDefaultProfile();
+    // Initialize with CV data from file or default profile
+    this.initializeProfileFromFile();
   }
 
-  private initializeDefaultProfile() {
-    const defaultProfile: CVProfile = {
+  private initializeProfileFromFile() {
+    try {
+      const cvFilePath = join(process.cwd(), 'data', 'mycv.md');
+      const personImagePath = join(process.cwd(), 'data', 'person.png');
+      
+      let profileData: Partial<CVProfile> = {};
+      
+      // Try to load and parse CV data from markdown file
+      if (existsSync(cvFilePath)) {
+        const markdownContent = readFileSync(cvFilePath, 'utf-8');
+        profileData = this.cvParserService.parseMarkdown(markdownContent);
+        console.log('✅ Successfully loaded CV data from data/mycv.md');
+      } else {
+        console.log('⚠️ CV file not found at data/mycv.md, using default profile data');
+      }
+      
+      // Set profile image path
+      let profileImage = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=150";
+      if (existsSync(personImagePath)) {
+        profileImage = "/api/image/person.png";
+        console.log('✅ Profile image found at data/person.png');
+      } else {
+        console.log('⚠️ Profile image not found at data/person.png, using default image');
+      }
+      
+      // Create the default profile with parsed data or fallback values
+      const defaultProfile: CVProfile = {
+        id: "default-profile",
+        name: profileData.name || "Professional",
+        title: profileData.title || "Software Professional", 
+        location: profileData.location || "",
+        bio: profileData.bio || "Professional with experience in software development and technology.",
+        profileImage,
+        experience: profileData.experience || [
+          {
+            title: "Software Engineer",
+            company: "Tech Company",
+            period: "2020-Present",
+            description: "Developing software solutions and working with modern technologies."
+          }
+        ],
+        skills: profileData.skills || ["JavaScript", "React", "Node.js", "TypeScript"],
+        certificates: profileData.certificates || [],
+        languages: profileData.languages || [
+          { name: "English", level: "Native", context: "Native speaker" }
+        ],
+        memberships: profileData.memberships || [],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      this.cvProfiles.set(defaultProfile.id, defaultProfile);
+      console.log('✅ CV profile initialized successfully');
+      
+    } catch (error) {
+      console.error('❌ Error initializing CV profile from file:', error);
+      // Fallback to minimal default profile
+      this.initializeFallbackProfile();
+    }
+  }
+  
+  private initializeFallbackProfile() {
+    const fallbackProfile: CVProfile = {
       id: "default-profile",
-      name: "John Anderson",
-      title: "Senior Software Engineer",
-      location: "San Francisco, CA",
-      bio: "Experienced software engineer with 8+ years in full-stack development, specializing in React, Node.js, and cloud technologies. Passionate about building scalable applications and leading development teams.",
+      name: "Professional",
+      title: "Software Professional",
+      location: "",
+      bio: "Professional profile",
       profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=150",
-      experience: [
-        {
-          title: "Senior Software Engineer",
-          company: "TechCorp",
-          period: "2021-Present",
-          description: "Led development of React-based dashboard serving 50K+ users, implementing Redux for state management and optimizing performance with React.memo and lazy loading. Reduced application load time by 40% through code splitting."
-        },
-        {
-          title: "Full Stack Developer",
-          company: "StartupXYZ",
-          period: "2019-2021",
-          description: "Built and maintained multiple web applications using Node.js, Express, and React. Implemented CI/CD pipelines and automated testing strategies."
-        }
-      ],
-      skills: ["React", "Node.js", "TypeScript", "Python", "AWS", "Docker", "PostgreSQL", "Redux", "Next.js", "Tailwind CSS"],
-      certificates: ["AWS Certified Developer", "React Professional Certificate", "Node.js Application Developer"],
-      languages: [
-        { name: "English", level: "Native", context: "Native speaker" },
-        { name: "Spanish", level: "Conversational", context: "Learned through travel and practice over 5 years" },
-        { name: "French", level: "Basic", context: "Self-taught using online resources" }
-      ],
-      memberships: ["IEEE Computer Society", "React Developer Community", "Node.js Foundation"],
+      experience: [],
+      skills: [],
+      certificates: [],
+      languages: [],
+      memberships: [],
       createdAt: new Date(),
       updatedAt: new Date()
     };
     
-    this.cvProfiles.set(defaultProfile.id, defaultProfile);
+    this.cvProfiles.set(fallbackProfile.id, fallbackProfile);
   }
 
   async getUser(id: string): Promise<User | undefined> {
