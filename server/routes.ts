@@ -5,7 +5,11 @@ import { insertChatMessageSchema } from "@shared/schema";
 import { CrewAIService } from "./services/crewai-service";
 import { CVParserService } from "./services/cv-parser";
 import { readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const crewAIService = new CrewAIService();
