@@ -42,6 +42,10 @@ A modern, AI-powered CV builder application that allows users to create, edit, a
 
 ### 1. Clone and Setup
 ```bash
+# Clone the repository (if running locally)
+git clone <repository-url>
+cd cv-builder
+
 # Install dependencies
 npm install
 
@@ -52,10 +56,49 @@ npm run dev
 The application will be available at `http://localhost:5000`
 
 ### 2. Environment Configuration
+
+#### On Replit
 The application uses environment variables for AI service configuration. In Replit, you can set these using the Secrets tool:
 
 - `OPENAI_API_KEY` - Your OpenAI API key (optional)
 - `CREWAI_API_KEY` - Your CrewAI API key (optional)
+- `AZURE_OPENAI_API_KEY` - Your Azure OpenAI API key (optional)
+- `AZURE_OPENAI_ENDPOINT` - Your Azure OpenAI endpoint (optional)
+- `AZURE_OPENAI_DEPLOYMENT_NAME` - Your Azure deployment name (optional)
+
+#### Running Locally
+If you're running this project locally outside of Replit:
+
+1. **Copy the environment template:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Edit the `.env` file** and add your API keys:
+   ```env
+   # For OpenAI
+   OPENAI_API_KEY=your_openai_api_key_here
+   
+   # For Azure OpenAI (alternative to OpenAI)
+   AZURE_OPENAI_API_KEY=your_azure_openai_api_key_here
+   AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com
+   AZURE_OPENAI_DEPLOYMENT_NAME=your_deployment_name_here
+   AZURE_OPENAI_API_VERSION=2024-02-15-preview
+   
+   # For CrewAI (alternative service)
+   CREWAI_API_KEY=your_crewai_api_key_here
+   
+   # Application settings
+   NODE_ENV=development
+   PORT=5000
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+The application will automatically detect which AI service you've configured and use it accordingly.
 
 ## 📁 Project Structure
 
@@ -190,15 +233,39 @@ The application is pre-configured for Replit deployment with:
 
 ### Common Issues
 
-1. **Port Issues**: Ensure the application binds to `0.0.0.0:5000` for Replit compatibility
+1. **Port Issues**: 
+   - On Replit: Ensure the application binds to `0.0.0.0:5000` for proper port forwarding
+   - Locally: The app will run on `http://localhost:5000`
+
 2. **Build Errors**: Check that all dependencies are installed with `npm install`
-3. **API Errors**: Verify environment variables are set correctly in Replit Secrets
+
+3. **API Errors**: 
+   - On Replit: Verify environment variables are set correctly in Replit Secrets
+   - Locally: Ensure your `.env` file is properly configured with valid API keys
+
+4. **Environment Variables Not Loading**:
+   - Locally: Make sure your `.env` file is in the root directory
+   - Check that variable names match exactly (case-sensitive)
 
 ### Development Tips
 
+**On Replit:**
 - Use the Replit console to view server logs
 - Check the browser console for frontend errors
 - Use the Replit database tool for data inspection (when PostgreSQL is configured)
+
+**Running Locally:**
+- Server logs will appear in your terminal where you ran `npm run dev`
+- Use browser developer tools for frontend debugging
+- Check your `.env` file if AI features aren't working
+
+### Local Development Requirements
+
+- **Node.js**: Version 20 or higher
+- **npm**: Comes with Node.js
+- **Git**: For cloning the repository (if needed)
+
+No additional software or databases are required for basic functionality - the app uses in-memory storage by default.
 
 ## 📧 Support
 
